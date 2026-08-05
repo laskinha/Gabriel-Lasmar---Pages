@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cabana com Jacuzzi & Lareira — Nazaré Paulista, SP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --dark:       #0C1810;
+      --forest:     #1A2E1A;
+      --mid-green:  #2A4A2A;
+      --amber:      #C8862A;
+      --amber-light:#E8B860;
+      --parchment:  #F0E8D8;
+      --muted:      #8A9880;
+      --card-bg:    #152012;
+      --white:      #FFFFFF;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--dark);
+      color: var(--parchment);
+      overflow-x: hidden;
+    }
+
+    /* ── STICKY HEADER ── */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(12,24,16,0);
+      backdrop-filter: blur(0px);
+      transition: background 0.4s, backdrop-filter 0.4s, padding 0.3s;
+    }
+    .header.scrolled {
+      background: rgba(12,24,16,0.95);
+      backdrop-filter: blur(12px);
+      padding: 12px 40px;
+      border-bottom: 1px solid rgba(200,134,42,0.15);
+    }
+    .header-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--amber-light);
+      letter-spacing: 0.04em;
+      text-decoration: none;
+    }
+    .header-nav { display: flex; gap: 28px; align-items: center; }
+    .header-nav a {
+      color: var(--parchment);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 400;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .header-nav a:hover { opacity: 1; }
+    .btn-reserve {
+      background: var(--amber);
+      color: #0C1810;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 10px 22px;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-reserve:hover { background: var(--amber-light); transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      height: 100vh; min-height: 600px;
+      display: flex; align-items: flex-end;
+      overflow: hidden;
+    }
+    .hero-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scale(1.03);
+      transition: transform 8s ease;
+    }
+    .hero-img.loaded { transform: scale(1); }
+
+    /* Dark top gradient + amber firelight from below */
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to bottom,
+          rgba(0,0,0,0.45) 0%,
+          rgba(0,0,0,0.05) 35%,
+          rgba(0,0,0,0.05) 55%,
+          rgba(12,24,16,0.98) 100%),
+        radial-gradient(ellipse at 50% 115%, rgba(200,134,42,0.45) 0%, transparent 58%);
+    }
+
+    .hero-content {
+      position: relative; z-index: 2;
+      width: 100%; padding: 0 60px 80px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(200,134,42,0.15);
+      border: 1px solid rgba(200,134,42,0.4);
+      border-radius: 50px;
+      padding: 7px 18px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--amber-light);
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+    .hero-badge span { color: var(--parchment); opacity: 0.7; }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 6vw, 5.2rem);
+      font-weight: 700;
+      line-height: 1.05;
+      color: var(--white);
+      max-width: 680px;
+      margin-bottom: 18px;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--amber-light);
+    }
+    .hero-sub {
+      font-size: 1.05rem;
+      font-weight: 300;
+      color: rgba(240,232,216,0.8);
+      max-width: 480px;
+      line-height: 1.6;
+      margin-bottom: 36px;
+    }
+    .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--amber);
+      color: #0C1810;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 16px 36px;
+      border-radius: 50px;
+      text-decoration: none;
+      animation: glowPulse 3s ease-in-out infinite;
+      transition: transform 0.15s, background 0.2s;
+    }
+    .btn-primary:hover { background: var(--amber-light); transform: translateY(-2px); }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(200,134,42,0.35), 0 4px 16px rgba(0,0,0,0.3); }
+      50%       { box-shadow: 0 0 45px rgba(200,134,42,0.65), 0 4px 16px rgba(0,0,0,0.3); }
+    }
+    .btn-secondary {
+      color: var(--parchment);
+      font-weight: 400;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(240,232,216,0.35);
+      transition: border-color 0.2s;
+      padding-bottom: 2px;
+    }
+    .btn-secondary:hover { border-color: var(--amber-light); color: var(--amber-light); }
+
+    .hero-chips {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin-top: 28px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      color: rgba(240,232,216,0.75);
+    }
+
+    /* ── TRUST BAR ── */
+    .trust-bar {
+      background: var(--forest);
+      border-top: 1px solid rgba(200,134,42,0.2);
+      border-bottom: 1px solid rgba(200,134,42,0.2);
+      padding: 18px 60px;
+      display: flex; gap: 0; align-items: stretch;
+      overflow-x: auto;
+    }
+    .trust-item {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      flex: 1; min-width: 130px;
+      padding: 0 20px;
+      border-right: 1px solid rgba(240,232,216,0.1);
+      gap: 3px;
+    }
+    .trust-item:last-child { border-right: none; }
+    .trust-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--amber-light);
+      line-height: 1;
+    }
+    .trust-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 400;
+      text-align: center;
+      line-height: 1.3;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .star-row { color: var(--amber); font-size: 0.85rem; letter-spacing: 1px; }
+
+    /* ── SECTION BASE ── */
+    section { padding: 90px 60px; }
+    .section-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--white);
+      max-width: 580px;
+      margin-bottom: 20px;
+    }
+    .section-title em { font-style: italic; color: var(--amber-light); }
+    .section-body {
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: rgba(240,232,216,0.75);
+      max-width: 520px;
+    }
+
+    /* ── EXPERIENCE SECTION ── */
+    .experience { background: var(--dark); }
+    .experience-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .experience-img-wrap {
+      position: relative;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .experience-img {
+      width: 100%; aspect-ratio: 3/4;
+      object-fit: cover;
+      display: block;
+      border-radius: 4px;
+    }
+    .experience-img-badge {
+      position: absolute; bottom: 20px; left: 20px;
+      background: rgba(12,24,16,0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(200,134,42,0.3);
+      border-radius: 8px;
+      padding: 12px 18px;
+    }
+    .experience-img-badge .val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--amber-light);
+      line-height: 1;
+    }
+    .experience-img-badge .lbl {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .experience-highlights {
+      margin-top: 36px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .highlight-row {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 14px 18px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      border-left: 2px solid var(--amber);
+    }
+    .highlight-icon { font-size: 1.4rem; flex-shrink: 0; line-height: 1.3; }
+    .highlight-text h4 {
+      font-size: 0.9rem; font-weight: 600;
+      color: var(--parchment); margin-bottom: 2px;
+    }
+    .highlight-text p { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── AMENITIES ── */
+    .amenities { background: var(--forest); }
+    .amenities-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 48px;
+    }
+    .amenity-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(240,232,216,0.06);
+      border-radius: 10px;
+      padding: 22px 18px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .amenity-card:hover {
+      border-color: rgba(200,134,42,0.3);
+      transform: translateY(-2px);
+    }
+    .amenity-icon { font-size: 1.6rem; margin-bottom: 10px; display: block; }
+    .amenity-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--parchment);
+      line-height: 1.4;
+    }
+
+    /* ── GALLERY ── */
+    .gallery { background: var(--dark); padding-bottom: 60px; }
+    .gallery-grid {
+      margin-top: 48px;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-rows: 280px 280px;
+      gap: 8px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .gallery-item { overflow: hidden; position: relative; }
+    .gallery-item:first-child { grid-row: span 2; }
+    .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+    .gallery-item:hover img { transform: scale(1.05); }
+    .gallery-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: var(--amber-light);
+      font-size: 0.9rem;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(232,184,96,0.3);
+      display: inline-block;
+      padding-bottom: 2px;
+      transition: border-color 0.2s;
+    }
+    .gallery-link:hover { border-color: var(--amber-light); }
+    .gallery-footer { text-align: center; margin-top: 24px; }
+
+    /* ── REVIEWS ── */
+    .reviews { background: var(--forest); }
+    .reviews-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 48px; flex-wrap: wrap; gap: 20px;
+    }
+    .reviews-score-big {
+      font-family: 'Playfair Display', serif;
+      font-size: 5rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1;
+    }
+    .reviews-score-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .reviews-breakdown { display: flex; flex-direction: column; gap: 6px; }
+    .breakdown-row { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; }
+    .breakdown-bar {
+      width: 120px; height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .breakdown-fill {
+      height: 100%; background: var(--amber);
+      border-radius: 2px;
+    }
+    .breakdown-val { color: var(--muted); min-width: 28px; }
+    .breakdown-label { color: rgba(240,232,216,0.6); min-width: 120px; }
+
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .review-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(240,232,216,0.06);
+      border-radius: 12px;
+      padding: 28px;
+    }
+    .review-stars { color: var(--amber); font-size: 0.85rem; margin-bottom: 14px; }
+    .review-text {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: rgba(240,232,216,0.8);
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    .review-author { display: flex; align-items: center; gap: 12px; }
+    .review-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--mid-green);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 0.85rem;
+      color: var(--amber-light);
+      flex-shrink: 0;
+    }
+    .review-name { font-size: 0.85rem; font-weight: 600; color: var(--parchment); }
+    .review-loc { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── EXTRAS ── */
+    .extras { background: var(--dark); }
+    .extras-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 48px;
+    }
+    .extra-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(240,232,216,0.06);
+      border-radius: 12px;
+      padding: 28px 24px;
+      transition: border-color 0.25s, transform 0.2s;
+    }
+    .extra-card:hover {
+      border-color: rgba(200,134,42,0.3);
+      transform: translateY(-3px);
+    }
+    .extra-icon { font-size: 2rem; margin-bottom: 14px; display: block; }
+    .extra-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: var(--parchment);
+      margin-bottom: 8px;
+    }
+    .extra-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+    .extra-tag {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--amber);
+      border: 1px solid rgba(200,134,42,0.35);
+      border-radius: 50px;
+      padding: 4px 12px;
+    }
+
+    /* ── LOCATION ── */
+    .location { background: var(--forest); }
+    .location-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      margin-top: 48px;
+    }
+    .location-distances { display: flex; flex-direction: column; gap: 14px; }
+    .distance-row {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border-radius: 8px;
+    }
+    .distance-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .distance-info h4 { font-size: 0.9rem; font-weight: 500; color: var(--parchment); }
+    .distance-info p { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .distance-time {
+      margin-left: auto;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--amber-light);
+    }
+    .location-img {
+      width: 100%; aspect-ratio: 4/3;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    /* ── FINAL CTA ── */
+    .final-cta {
+      background: var(--dark);
+      text-align: center;
+      padding: 100px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .final-cta::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 80%, rgba(200,134,42,0.18) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .final-cta-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 16px;
+    }
+    .final-cta-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 16px;
+      max-width: 680px;
+      margin-left: auto; margin-right: auto;
+    }
+    .final-cta-title em { font-style: italic; color: var(--amber-light); }
+    .final-cta-sub {
+      font-size: 1rem;
+      color: rgba(240,232,216,0.6);
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+    .final-cta-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--amber);
+      color: #0C1810;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 20px 48px;
+      border-radius: 50px;
+      text-decoration: none;
+      animation: glowPulse 3s ease-in-out infinite;
+      transition: transform 0.15s, background 0.2s;
+      position: relative;
+    }
+    .final-cta-btn:hover { background: var(--amber-light); transform: translateY(-2px); }
+    .final-cta-note {
+      margin-top: 18px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+    }
+    .final-cta-note span { display: flex; align-items: center; gap: 5px; }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--forest);
+      border-top: 1px solid rgba(240,232,216,0.06);
+      padding: 28px 60px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      color: var(--amber-light);
+    }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .header { padding: 14px 20px; }
+      .header-nav { display: none; }
+      section { padding: 60px 20px; }
+      .trust-bar { padding: 16px 20px; gap: 0; }
+      .trust-item { min-width: 100px; padding: 0 10px; }
+      .hero-content { padding: 0 24px 60px; }
+      .experience-grid { grid-template-columns: 1fr; gap: 40px; }
+      .gallery-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 200px 200px 200px;
+      }
+      .gallery-item:first-child { grid-row: span 1; grid-column: span 2; }
+      .reviews-grid { grid-template-columns: 1fr; }
+      .reviews-header { flex-direction: column; }
+      .location-grid { grid-template-columns: 1fr; }
+      .footer { flex-direction: column; text-align: center; padding: 20px; }
+      .final-cta { padding: 70px 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-img, .fade-up, .btn-primary, .final-cta-btn { animation: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header class="header" id="header">
+    <a href="#" class="header-logo">Villa Rafa Chalés</a>
+    <nav class="header-nav">
+      <a href="#comodidades">Comodidades</a>
+      <a href="#galeria">Galeria</a>
+      <a href="#avaliacoes">Avaliações</a>
+      <a href="#extras">Extras</a>
+      <a href="https://www.airbnb.com.br/rooms/1452522686855358153" target="_blank" class="btn-reserve">Reservar Agora</a>
+    </nav>
+  </header>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <img
+      class="hero-img"
+      id="heroImg"
+      src="https://a0.muscache.com/im/pictures/hosting/Hosting-1452522686855358153/original/fed9853b-2ca9-439a-b0ef-99a24ae84682.jpeg?im_w=1440"
+      alt="Vista da Cabana em Nazaré Paulista"
+    />
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span>⭐ 4,98 · 107 avaliações</span>
+        &nbsp;·&nbsp; Superhost Verified
+      </div>
+      <h1 class="hero-title">
+        Sua <em>fuga perfeita</em><br>na natureza
+      </h1>
+      <p class="hero-sub">
+        Cabana com jacuzzi aquecida, lareira e vista para o lago, no coração de um bosque preservado em Nazaré Paulista, SP.
+      </p>
+      <div class="hero-ctas">
+        <a href="https://www.airbnb.com.br/rooms/1452522686855358153" target="_blank" class="btn-primary">
+          🌿 Verificar Disponibilidade
+        </a>
+        <a href="#galeria" class="btn-secondary">Ver fotos</a>
+      </div>
+      <div class="hero-chips">
+        <span class="chip">📍 Nazaré Paulista, SP</span>
+        <span class="chip">👥 Até 3 hóspedes</span>
+        <span class="chip">🛏 Cama queen + sofá-cama</span>
+        <span class="chip">🚗 5 min da represa</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TRUST BAR ── -->
+  <div class="trust-bar">
+    <div class="trust-item">
+      <div class="star-row">★★★★★</div>
+      <div class="trust-value">4,98</div>
+      <div class="trust-label">Nota média</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-value">107</div>
+      <div class="trust-label">Avaliações</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-value">98%</div>
+      <div class="trust-label">5 estrelas</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-value">Top 10%</div>
+      <div class="trust-label">Acomodações no Airbnb</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-value">7 anos</div>
+      <div class="trust-label">Como Superhost</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-value">100%</div>
+      <div class="trust-label">Taxa de resposta</div>
+    </div>
+  </div>
+
+  <!-- ── EXPERIENCE ── -->
+  <section class="experience fade-up">
+    <div class="experience-grid">
+      <div class="experience-img-wrap">
+        <img
+          class="experience-img"
+          src="https://a0.muscache.com/im/pictures/hosting/Hosting-1452522686855358153/original/1e3711bf-43ae-4f8a-8e98-eccb808fe6b3.jpeg?im_w=720"
+          alt="Jacuzzi com vista para o lago"
+        />
+        <div class="experience-img-badge">
+          <div class="val">★ 4,98</div>
+          <div class="lbl">Nota dos hóspedes</div>
+        </div>
+      </div>
+      <div>
+        <div class="section-eyebrow">A Experiência</div>
+        <h2 class="section-title">Mais que uma hospedagem — <em>uma memória</em></h2>
+        <p class="section-body">
+          Imagine mergulhar em uma jacuzzi aquecida enquanto o entardecer pinta o lago de laranja. Acender a lareira e sentir o calor da madeira enquanto o bosque descansa ao redor. Uma cabana recém-inaugurada, pensada em cada detalhe para você desacelerar de verdade.
+        </p>
+        <div class="experience-highlights">
+          <div class="highlight-row">
+            <div class="highlight-icon">🛁</div>
+            <div class="highlight-text">
+              <h4>Jacuzzi com hidro aquecida</h4>
+              <p>Vista panorâmica para a natureza e o lago — de dia ou à noite</p>
+            </div>
+          </div>
+          <div class="highlight-row">
+            <div class="highlight-icon">🔥</div>
+            <div class="highlight-text">
+              <h4>Lareira & Fogueira externa</h4>
+              <p>Noites perfeitas com aquecimento dentro e fora da cabana</p>
+            </div>
+          </div>
+          <div class="highlight-row">
+            <div class="highlight-icon">📺</div>
+            <div class="highlight-text">
+              <h4>Smart TV 360° giratória</h4>
+              <p>Assista da cama ou da banheira — a escolha é sua</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AMENITIES ── -->
+  <section class="amenities fade-up" id="comodidades">
+    <div class="section-eyebrow">Comodidades</div>
+    <h2 class="section-title">Tudo que você precisa,<br><em>e muito mais</em></h2>
+    <div class="amenities-grid">
+      <div class="amenity-card">
+        <span class="amenity-icon">🛁</span>
+        <div class="amenity-name">Jacuzzi Aquecida com Hidro</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">🔥</span>
+        <div class="amenity-name">Lareira & Calefator</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">🏔️</span>
+        <div class="amenity-name">Vista para o Lago & Montanhas</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">📺</span>
+        <div class="amenity-name">Smart TV 360° Giratória</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">🛏️</span>
+        <div class="amenity-name">Cama Queen + Sofá-cama</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">🍳</span>
+        <div class="amenity-name">Cozinha Completa Equipada</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">🌳</span>
+        <div class="amenity-name">Deck com Rede Suspensa</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">🍖</span>
+        <div class="amenity-name">Churrasqueira & Fogueira</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">🎣</span>
+        <div class="amenity-name">Lago para Pesca Esportiva</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">💻</span>
+        <div class="amenity-name">Wi-Fi & Espaço Home Office</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">❄️</span>
+        <div class="amenity-name">Ar-Cond. Quente e Frio</div>
+      </div>
+      <div class="amenity-card">
+        <span class="amenity-icon">🔑</span>
+        <div class="amenity-name">Self Check-in com Teclado</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GALLERY ── -->
+  <section class="gallery fade-up" id="galeria">
+    <div class="section-eyebrow">Galeria</div>
+    <h2 class="section-title">Um refúgio que fala<br><em>por si mesmo</em></h2>
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <img src="https://a0.muscache.com/im/pictures/hosting/Hosting-1452522686855358153/original/4003403e-1fbd-4c79-a947-6decdf53c2eb.jpeg?im_w=720" alt="Cabana vista externa" />
+      </div>
+      <div class="gallery-item">
+        <img src="https://a0.muscache.com/im/pictures/hosting/Hosting-1452522686855358153/original/391d3f42-22c8-4ba1-b3c4-aae481cdd1eb.jpeg?im_w=720" alt="Interior da cabana" />
+      </div>
+      <div class="gallery-item">
+        <img src="https://a0.muscache.com/im/pictures/hosting/Hosting-1452522686855358153/original/3a050d0a-f659-472b-93f9-ab307957f5b4.jpeg?im_w=720" alt="Quarto com cama queen" />
+      </div>
+      <div class="gallery-item">
+        <img src="https://a0.muscache.com/im/pictures/hosting/Hosting-1452522686855358153/original/6a1d0d48-fcb5-4e17-afda-f514aaa9b14d.jpeg?im_w=720" alt="Deck e área externa" />
+      </div>
+      <div class="gallery-item">
+        <img src="https://a0.muscache.com/im/pictures/hosting/Hosting-1452522686855358153/original/1e3711bf-43ae-4f8a-8e98-eccb808fe6b3.jpeg?im_w=720" alt="Vista para o lago" />
+      </div>
+    </div>
+    <div class="gallery-footer">
+      <a href="https://www.airbnb.com.br/rooms/1452522686855358153" target="_blank" class="gallery-link">
+        Ver todas as fotos no Airbnb →
+      </a>
+    </div>
+  </section>
+
+  <!-- ── REVIEWS ── -->
+  <section class="reviews fade-up" id="avaliacoes">
+    <div class="reviews-header">
+      <div>
+        <div class="section-eyebrow">Avaliações</div>
+        <div style="display:flex; align-items:baseline; gap:16px;">
+          <div class="reviews-score-big">4,98</div>
+          <div>
+            <div class="star-row" style="font-size:1.1rem;">★★★★★</div>
+            <div class="reviews-score-label">de 107 avaliações</div>
+          </div>
+        </div>
+      </div>
+      <div class="reviews-breakdown">
+        <div class="breakdown-row">
+          <div class="breakdown-label">Limpeza</div>
+          <div class="breakdown-bar"><div class="breakdown-fill" style="width:100%"></div></div>
+          <div class="breakdown-val">5,0</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="breakdown-label">Exatidão</div>
+          <div class="breakdown-bar"><div class="breakdown-fill" style="width:100%"></div></div>
+          <div class="breakdown-val">5,0</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="breakdown-label">Check-in</div>
+          <div class="breakdown-bar"><div class="breakdown-fill" style="width:100%"></div></div>
+          <div class="breakdown-val">5,0</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="breakdown-label">Comunicação</div>
+          <div class="breakdown-bar"><div class="breakdown-fill" style="width:98%"></div></div>
+          <div class="breakdown-val">4,9</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="breakdown-label">Custo-benefício</div>
+          <div class="breakdown-bar"><div class="breakdown-fill" style="width:98%"></div></div>
+          <div class="breakdown-val">4,9</div>
+        </div>
+      </div>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"A cabana estava impecável — limpa, cheirosa e exatamente como nas fotos. A banheira de hidro aquecida à noite com vista para o bosque foi simplesmente mágica. Com certeza voltaremos!"</p>
+        <div class="review-author">
+          <div class="review-avatar">FM</div>
+          <div>
+            <div class="review-name">Fernanda M.</div>
+            <div class="review-loc">São Paulo, SP</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Superanfitrião de verdade! Tudo exatamente como descrito, ou melhor. A lareira, o deck com rede, a fogueira... cada detalhe pensado com carinho. Lugar perfeito para desconectar."</p>
+        <div class="review-author">
+          <div class="review-avatar">RS</div>
+          <div>
+            <div class="review-name">Rodrigo S.</div>
+            <div class="review-loc">Campinas, SP</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Que espaço lindo! A vista para o lago da banheira é de tirar o fôlego. O espaço interno é super completo. Foram os dias mais relaxantes que tivemos em anos. Recomendo de olhos fechados!"</p>
+        <div class="review-author">
+          <div class="review-avatar">CA</div>
+          <div>
+            <div class="review-name">Camila & André</div>
+            <div class="review-loc">Rio de Janeiro, RJ</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── EXTRAS ── -->
+  <section class="extras fade-up" id="extras">
+    <div class="section-eyebrow">Serviços Opcionais</div>
+    <h2 class="section-title">Personalize sua<br><em>experiência</em></h2>
+    <p class="section-body" style="margin-top:0;">Solicite na reserva e chegue com tudo pronto. Serviços adicionais não inclusos no valor da diária.</p>
+    <div class="extras-grid">
+      <div class="extra-card">
+        <span class="extra-icon">🧺</span>
+        <div class="extra-name">Cesta de Café da Manhã</div>
+        <p class="extra-desc">Produtos artesanais e frescos entregues na porta da sua cabana para começar o dia com charme.</p>
+        <span class="extra-tag">Sob encomenda</span>
+      </div>
+      <div class="extra-card">
+        <span class="extra-icon">💆</span>
+        <div class="extra-name">Massagem com Pedras Quentes</div>
+        <p class="extra-desc">Sessão relaxante com pedras vulcânicas aquecidas, realizada no conforto da sua cabana.</p>
+        <span class="extra-tag">Sob encomenda</span>
+      </div>
+      <div class="extra-card">
+        <span class="extra-icon">🌹</span>
+        <div class="extra-name">Decoração Romântica</div>
+        <p class="extra-desc">Pétalas de rosa, velas e detalhes especiais para celebrar datas especiais ou surpreender a pessoa amada.</p>
+        <span class="extra-tag">Sob encomenda</span>
+      </div>
+      <div class="extra-card">
+        <span class="extra-icon">🚤</span>
+        <div class="extra-name">Passeios na Natureza</div>
+        <p class="extra-desc">Lancha, caiaque, quadriciclo, cavalo ou voo duplo de paraglider. Aventura com toda a estrutura.</p>
+        <span class="extra-tag">Sob encomenda</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LOCATION ── -->
+  <section class="location fade-up">
+    <div class="section-eyebrow">Localização</div>
+    <h2 class="section-title">No coração da natureza,<br><em>perto de tudo</em></h2>
+    <div class="location-grid">
+      <div class="location-distances">
+        <div class="distance-row">
+          <div class="distance-icon">🌊</div>
+          <div class="distance-info">
+            <h4>Represa de Nazaré Paulista</h4>
+            <p>Passeios de barco e orla</p>
+          </div>
+          <div class="distance-time">5 min</div>
+        </div>
+        <div class="distance-row">
+          <div class="distance-icon">🏘️</div>
+          <div class="distance-info">
+            <h4>Centro de Nazaré Paulista</h4>
+            <p>Comércios, restaurantes e mercados</p>
+          </div>
+          <div class="distance-time">5 min</div>
+        </div>
+        <div class="distance-row">
+          <div class="distance-icon">🛣️</div>
+          <div class="distance-info">
+            <h4>Rodovia Dom Pedro I</h4>
+            <p>Acesso pavimentado facilitado</p>
+          </div>
+          <div class="distance-time">3 km</div>
+        </div>
+        <div class="distance-row">
+          <div class="distance-icon">🌿</div>
+          <div class="distance-info">
+            <h4>Bosque Preservado</h4>
+            <p>Trilhas e contato direto com a natureza</p>
+          </div>
+          <div class="distance-time">Na porta</div>
+        </div>
+        <div class="distance-row">
+          <div class="distance-icon">🏙️</div>
+          <div class="distance-info">
+            <h4>São Paulo (capital)</h4>
+            <p>Acesso rápido pela Dom Pedro I</p>
+          </div>
+          <div class="distance-time">~1h20</div>
+        </div>
+      </div>
+      <div>
+        <img
+          class="location-img"
+          src="https://a0.muscache.com/im/pictures/hosting/Hosting-1452522686855358153/original/6a1d0d48-fcb5-4e17-afda-f514aaa9b14d.jpeg?im_w=720"
+          alt="Área externa e natureza ao redor"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FINAL CTA ── -->
+  <section class="final-cta fade-up">
+    <div class="final-cta-eyebrow">Reserve sua estadia</div>
+    <h2 class="final-cta-title">
+      Já imaginou<br><em>acordar aqui amanhã?</em>
+    </h2>
+    <p class="final-cta-sub">Datas costumam esgotar rápido — garanta já a sua escapada.</p>
+    <a href="https://www.airbnb.com.br/rooms/1452522686855358153" target="_blank" class="final-cta-btn">
+      🌿 Reservar no Airbnb
+    </a>
+    <div class="final-cta-note">
+      <span>✓ Cancelamento flexível</span>
+      <span>✓ Self check-in</span>
+      <span>✓ Superhost verificado</span>
+      <span>✓ ⭐ 4,98 de 5,0</span>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-brand">Villa Rafa Chalés — Nazaré Paulista, SP</div>
+    <div class="footer-copy">Gerenciado por Wow Stay · Superhost Airbnb</div>
+  </footer>
+
+  <script>
+    // Scroll header style
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // Hero image load animation
+    const heroImg = document.getElementById('heroImg');
+    heroImg.addEventListener('load', () => heroImg.classList.add('loaded'));
+    if (heroImg.complete) heroImg.classList.add('loaded');
+
+    // Scroll fade-in animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
