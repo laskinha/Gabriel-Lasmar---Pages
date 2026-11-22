@@ -2,6 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>Arena da Live</title>
+<link rel="manifest" href="manifest.json"><meta name="mobile-web-app-capable" content="yes"><meta name="theme-color" content="#05060a">
 <style>
 html,body{margin:0;height:100%;background:#05060a;overflow:hidden;font-family:system-ui,Arial,sans-serif;color:#fff}
 canvas{display:block;width:100vw;height:100vh;touch-action:none}
@@ -123,6 +124,9 @@ function draw(){
 }
 function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;step(dt);draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
+// toque na tela = tela cheia (esconde a barra do navegador)
+function fs(){const e=document.documentElement;if(!document.fullscreenElement&&e.requestFullscreen)e.requestFullscreen({navigationUI:"hide"}).catch(()=>{});}
+document.addEventListener("click",fs);document.addEventListener("touchend",fs);
 // conexão
 if(DEMO){
   const names=["Ana","Beto","Carla","Dudu","Eli","Fabi","Gui","Hugo","Iara","Jão","Kaká","Lia","Malu","Nando","Ofélia","Pedro"];
