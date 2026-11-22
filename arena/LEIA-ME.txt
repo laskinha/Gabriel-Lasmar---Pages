@@ -1,0 +1,10 @@
+ARENA DA LIVE - como usar
+
+TESTE (sem live): abra  SEU-LINK/?demo=1
+LIVE REAL: defina a variavel TIKTOK_USER com seu @ (sem o @) e inicie com: npm install && npm start
+Titulo opcional: SEU-LINK/?titulo=ARENA%20DO%20GABS
+
+Hospedagem (Render): New > Web Service > suba esta pasta num repositorio
+  Build: npm install   |   Start: npm start   |   Env: TIKTOK_USER=seuarroba
+No celular: abra o link no navegador, inicie a LIVE no TikTok > Jogo > transmitir a tela.
+Entram: comentario, like, seguir, compartilhar. Presente = lutador gigante.

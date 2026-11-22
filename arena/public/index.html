@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Arena da Live</title>
+<style>
+html,body{margin:0;height:100%;background:#05060a;overflow:hidden;font-family:system-ui,Arial,sans-serif;color:#fff}
+canvas{display:block;width:100vw;height:100vh;touch-action:none}
+</style></head><body><canvas id="c"></canvas>
+<script>
+const Q=new URLSearchParams(location.search);
+const DEMO=Q.has("demo");
+const TITLE=Q.get("titulo")||"ARENA DA LIVE";
+const cv=document.getElementById("c"),ctx=cv.getContext("2d");
+const W=1080,H=1920;cv.width=W;cv.height=H;
+const CX=540,CY=900,R=470;               // arena circular
+const fighters=new Map(); const fx=[]; const feed=[]; let winner=null,winT=0,round=1;
+const MAXF=40;
+const imgCache=new Map();
+function img(u){if(!u)return null;if(imgCache.has(u))return imgCache.get(u);
+ const i=new Image();i.crossOrigin="anonymous";i.src=u;i.onerror=()=>i._bad=1;imgCache.set(u,i);return i;}
+const COLORS=["#ff5a5f","#ffb400","#2ecc71","#3aa0ff","#c15bff","#ff6fb5","#19d3c5","#ff8a3d"];
+const hashColor=s=>COLORS[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
+function addFighter(u,hp){
+  let f=fighters.get(u.id);
+  if(f){f.hp=Math.min(f.max*1.5,f.hp+hp);f.max=Math.max(f.max,f.hp);return f;}
+  if(fighters.size>=MAXF){ // remove o mais fraco
+    let w=null;fighters.forEach(x=>{if(!w||x.hp<w.hp)w=x});if(w&&w.hp<hp)fighters.delete(w.id);else return null;}
+  const a=Math.random()*6.28,d=Math.random()*R*.6;
+  f={id:u.id,name:u.name,pic:u.pic,x:CX+Math.cos(a)*d,y:CY+Math.sin(a)*d,vx:(Math.random()-.5)*300,vy:(Math.random()-.5)*300,
+     hp,max:hp,r:44,col:hashColor(u.id+u.name),kills:0,power:1,hit:0,spawn:1};
+  fighters.set(u.id,f);log(u.name+" entrou");return f;
+}
+function log(t){feed.unshift({t,life:5});if(feed.length>6)feed.pop();}
+function boom(x,y,col,n=10){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=100+Math.random()*300;fx.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.6,col});}}
+function pop(x,y,text,col){fx.push({x,y,vy:-90,l:1,text,col,txt:1});}
+function onEvent(e){
+  if(winner)return;
+  if(e.t==="chat"){const f=addFighter(e,100);if(f){f.power=Math.min(2,f.power+.05);pop(f.x,f.y-60,"💬","#fff");}}
+  else if(e.t==="like"){const f=fighters.get(e.id)||addFighter(e,100);if(f){f.hp=Math.min(f.max*1.5,f.hp+Math.min(e.n,10)*2);}}
+  else if(e.t==="follow"){const f=addFighter(e,150);if(f){f.hp+=120;f.max=Math.max(f.max,f.hp);pop(f.x,f.y-60,"+SEGUIU","#ffd34d");}}
+  else if(e.t==="share"){const f=addFighter(e,150);if(f){f.hp+=80;f.max=Math.max(f.max,f.hp);pop(f.x,f.y-60,"+SHARE","#7fe3ff");}}
+  else if(e.t==="gift"){const hp=Math.min(4000,150+e.coins*25);const f=addFighter(e,hp);if(f){f.hp=Math.max(f.hp,hp);f.max=Math.max(f.max,f.hp);f.r=Math.min(80,44+Math.sqrt(e.coins)*1.4);f.power=Math.min(3,f.power+e.coins/80);
+    pop(f.x,f.y-70,"🎁 "+(e.gift||e.coins),"#ffd34d");boom(f.x,f.y,"#ffd34d",24);log(e.name+" mandou "+(e.gift||e.coins+" moedas"));}}
+}
+let last=performance.now();
+function step(dt){
+  const arr=[...fighters.values()];
+  for(const f of arr){
+    f.x+=f.vx*dt;f.y+=f.vy*dt;f.spawn=Math.max(0,f.spawn-dt*2);f.hit=Math.max(0,f.hit-dt*4);
+    const sp=Math.hypot(f.vx,f.vy);if(sp<160){f.vx*=1.02;f.vy*=1.02;}if(sp>480){f.vx*=.98;f.vy*=.98;}
+    const dx=f.x-CX,dy=f.y-CY,d=Math.hypot(dx,dy);
+    if(d>R-f.r){const nx=dx/d,ny=dy/d;f.x=CX+nx*(R-f.r);f.y=CY+ny*(R-f.r);const dot=f.vx*nx+f.vy*ny;f.vx-=2*dot*nx;f.vy-=2*dot*ny;}
+  }
+  for(let i=0;i<arr.length;i++)for(let j=i+1;j<arr.length;j++){
+    const a=arr[i],b=arr[j];const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1,m=a.r+b.r;
+    if(d<m){const nx=dx/d,ny=dy/d,o=(m-d)/2;a.x-=nx*o;a.y-=ny*o;b.x+=nx*o;b.y+=ny*o;
+      const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){a.vx+=rv*nx;a.vy+=rv*ny;b.vx-=rv*nx;b.vy-=rv*ny;}
+      if(!a._c||!b._c||true){ // dano por contato
+        const da=8*b.power*(1+Math.random()*.6),db=8*a.power*(1+Math.random()*.6);
+        a.hp-=da;b.hp-=db;a.hit=1;b.hit=1;
+        if(Math.random()<.15)boom((a.x+b.x)/2,(a.y+b.y)/2,"#fff",3);
+        if(a.hp<=0&&!a.dead){a.dead=1;b.kills++;}
+        if(b.hp<=0&&!b.dead){b.dead=1;a.kills++;}
+      }}
+  }
+  for(const f of arr)if(f.hp<=0){boom(f.x,f.y,f.col,20);log(f.name+" foi eliminado");fighters.delete(f.id);}
+  if(fighters.size===1&&!winner&&roundStarted>=3){winner=[...fighters.values()][0];winT=0;boom(winner.x,winner.y,"#ffd34d",50);}
+  roundStarted=Math.max(roundStarted,Math.min(fighters.size,3));
+  for(const p of fx){p.x+=(p.vx||0)*dt;p.y+=p.vy*dt;p.l-=dt;}
+  for(let i=fx.length-1;i>=0;i--)if(fx[i].l<=0)fx.splice(i,1);
+  feed.forEach(f=>f.life-=dt);while(feed.length&&feed[feed.length-1].life<=0)feed.pop();
+  if(winner){winT+=dt;if(winT>7){fighters.clear();winner=null;round++;roundStarted=0;}}
+}
+let roundStarted=0;
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function draw(){
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0b0d1a");g.addColorStop(1,"#05060a");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // título
+  ctx.textAlign="center";ctx.font="900 72px Impact,Anton,sans-serif";ctx.fillStyle="#fff";ctx.fillText(TITLE,W/2,230);
+  ctx.font="600 34px system-ui";ctx.fillStyle="#9fb4ff";ctx.fillText("Comente pra ENTRAR • Curta pra curar • Presente = gigante",W/2,285);
+  ctx.fillStyle="#ffd34d";ctx.font="800 36px system-ui";ctx.fillText("RODADA "+round+"  •  "+fighters.size+" lutando",W/2,345);
+  // arena
+  ctx.save();ctx.beginPath();ctx.arc(CX,CY,R+14,0,6.28);ctx.fillStyle="#1b2a66";ctx.fill();
+  const ag=ctx.createRadialGradient(CX,CY,50,CX,CY,R);ag.addColorStop(0,"#7a4a22");ag.addColorStop(1,"#4a2a12");
+  ctx.beginPath();ctx.arc(CX,CY,R,0,6.28);ctx.fillStyle=ag;ctx.fill();
+  ctx.strokeStyle="rgba(0,0,0,.25)";ctx.lineWidth=4;for(let k=-3;k<=3;k++){ctx.beginPath();ctx.moveTo(CX-R,CY+k*130);ctx.lineTo(CX+R,CY+k*130);ctx.stroke();}
+  ctx.restore();
+  // lutadores
+  const arr=[...fighters.values()].sort((a,b)=>a.y-b.y);
+  for(const f of arr){
+    const r=f.r*(1+(1-f.spawn)*0);const sc=1-f.spawn*.5;const rr=r*sc;
+    ctx.save();ctx.beginPath();ctx.arc(f.x,f.y,rr,0,6.28);ctx.closePath();ctx.fillStyle=f.col;ctx.fill();ctx.clip();
+    const im=img(f.pic);
+    if(im&&im.complete&&!im._bad&&im.naturalWidth){try{ctx.drawImage(im,f.x-rr,f.y-rr,rr*2,rr*2);}catch(e){}}
+    else{ctx.fillStyle="#fff";ctx.font="800 "+rr+"px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText((f.name||"?")[0].toUpperCase(),f.x,f.y+2);ctx.textBaseline="alphabetic";}
+    if(f.hit>0){ctx.fillStyle="rgba(255,60,60,"+f.hit*.5+")";ctx.fillRect(f.x-rr,f.y-rr,rr*2,rr*2);}
+    ctx.restore();
+    ctx.lineWidth=6;ctx.strokeStyle=f.col;ctx.beginPath();ctx.arc(f.x,f.y,rr,0,6.28);ctx.stroke();
+    // barra de vida
+    const bw=Math.max(90,rr*2),bx=f.x-bw/2,by=f.y+rr+8;
+    ctx.fillStyle="rgba(0,0,0,.7)";roundRect(bx,by,bw,22,8);ctx.fill();
+    ctx.fillStyle=f.hp/f.max>.4?"#37d67a":"#ff4d4d";roundRect(bx+2,by+2,Math.max(0,(bw-4)*Math.min(1,f.hp/f.max)),18,6);ctx.fill();
+    ctx.fillStyle="#fff";ctx.font="700 18px system-ui";ctx.textAlign="center";ctx.fillText(Math.ceil(f.hp)+" / "+Math.ceil(f.max),f.x,by+17);
+    ctx.font="700 22px system-ui";ctx.fillStyle="#fff";ctx.strokeStyle="rgba(0,0,0,.8)";ctx.lineWidth=4;
+    const nm=(f.name||"").slice(0,12);ctx.strokeText(nm,f.x,f.y-rr-10);ctx.fillText(nm,f.x,f.y-rr-10);
+  }
+  // efeitos
+  for(const p of fx){ctx.globalAlpha=Math.max(0,Math.min(1,p.l*1.4));
+    if(p.txt){ctx.font="800 34px system-ui";ctx.textAlign="center";ctx.strokeStyle="#000";ctx.lineWidth=5;ctx.strokeText(p.text,p.x,p.y);ctx.fillStyle=p.col;ctx.fillText(p.text,p.x,p.y);}
+    else{ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,6,0,6.28);ctx.fill();}
+    ctx.globalAlpha=1;}
+  // ranking
+  const top=[...fighters.values()].sort((a,b)=>b.hp-a.hp).slice(0,5);
+  ctx.textAlign="left";ctx.font="800 34px system-ui";ctx.fillStyle="#fff";ctx.fillText("TOP 5",60,1480);
+  top.forEach((f,i)=>{ctx.font="700 30px system-ui";ctx.fillStyle=i==0?"#ffd34d":"#dfe6ff";ctx.fillText((i+1)+". "+(f.name||"").slice(0,16),60,1528+i*48);
+    ctx.textAlign="right";ctx.fillText(Math.ceil(f.hp)+" HP • "+f.kills+"☠",560,1528+i*48);ctx.textAlign="left";});
+  // feed
+  ctx.textAlign="right";feed.forEach((f,i)=>{ctx.globalAlpha=Math.min(1,f.life);ctx.font="600 28px system-ui";ctx.fillStyle="#ffe9a6";ctx.fillText(f.t,W-50,1500+i*46);ctx.globalAlpha=1;});
+  // vencedor
+  if(winner){ctx.fillStyle="rgba(0,0,0,.65)";ctx.fillRect(0,700,W,360);ctx.textAlign="center";ctx.font="900 90px Impact,sans-serif";ctx.fillStyle="#ffd34d";ctx.fillText("👑 VENCEDOR",W/2,820);
+    ctx.font="800 80px system-ui";ctx.fillStyle="#fff";ctx.fillText(winner.name.slice(0,16),W/2,930);ctx.font="600 34px system-ui";ctx.fillStyle="#9fb4ff";ctx.fillText("Nova rodada em instantes...",W/2,1000);}
+  if(!fighters.size&&!winner){ctx.textAlign="center";ctx.font="800 56px system-ui";ctx.fillStyle="#fff";ctx.fillText("Comente pra entrar na arena!",W/2,CY);}
+}
+function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;step(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+// conexão
+if(DEMO){
+  const names=["Ana","Beto","Carla","Dudu","Eli","Fabi","Gui","Hugo","Iara","Jão","Kaká","Lia","Malu","Nando","Ofélia","Pedro"];
+  let n=0;setInterval(()=>{const i=Math.floor(Math.random()*names.length);const u={id:"u"+i,name:names[i],pic:""};const r=Math.random();
+    if(r<.55)onEvent({t:"chat",...u,text:"oi"});else if(r<.8)onEvent({t:"like",...u,n:5});else if(r<.9)onEvent({t:"follow",...u});else onEvent({t:"gift",...u,coins:[1,5,30,99,500][Math.floor(Math.random()*5)],gift:"Rosa"});},500);
+}else{
+  const conn=()=>{const ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host);
+    ws.onmessage=m=>{try{onEvent(JSON.parse(m.data))}catch(e){}};ws.onclose=()=>setTimeout(conn,2000);};conn();
+}
+</script></body></html>
