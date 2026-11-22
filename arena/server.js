@@ -18,7 +18,7 @@ const send = (o) => {
 
 function start() {
   if (!USER) { console.log("Defina TIKTOK_USER (seu @ sem o @). Rodando só o site/demo."); return; }
-  const conn = new TikTokLiveConnection(USER);
+  const conn = new TikTokLiveConnection(USER, {});
   const who = (d) => ({
     id: String(d.user?.userId ?? d.userId ?? d.user?.uniqueId ?? Math.random()),
     name: d.user?.nickname || d.user?.uniqueId || "anon",
