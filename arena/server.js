@@ -19,21 +19,29 @@ const send = (o) => {
 function start() {
   if (!USER) { console.log("Defina TIKTOK_USER (seu @ sem o @). Rodando só o site/demo."); return; }
   const conn = new TikTokLiveConnection(USER, {});
-  const who = (d) => ({
-    id: String(d.user?.userId ?? d.userId ?? d.user?.uniqueId ?? Math.random()),
-    name: d.user?.nickname || d.user?.uniqueId || "anon",
-    pic: d.user?.profilePicture?.url?.[0] || d.user?.profilePicture?.urls?.[0] || ""
-  });
-  conn.on(WebcastEvent.CHAT, (d) => send({ t: "chat", ...who(d), text: d.comment || "" }));
-  conn.on(WebcastEvent.LIKE, (d) => send({ t: "like", ...who(d), n: d.likeCount || 1 }));
+  // identificador estável por pessoa (nunca aleatório)
+  const who = (d) => {
+    const u = d.user || {};
+    const id = String(u.uniqueId || u.userId || u.nickname || "");
+    return {
+      id,
+      name: u.nickname || u.uniqueId || "anon",
+      pic: u.profilePicture?.urls?.[0] || u.profilePicture?.url?.[0] || ""
+    };
+  };
+  const ok = (w) => w.id !== "" && w.id !== "0";
+  conn.on(WebcastEvent.CHAT, (d) => { const w = who(d); if (ok(w)) send({ t: "chat", ...w, text: d.comment || "" }); });
+  conn.on(WebcastEvent.LIKE, (d) => { const w = who(d); if (ok(w)) send({ t: "like", ...w, n: d.likeCount || 1 }); });
   conn.on(WebcastEvent.GIFT, (d) => {
+    const w = who(d); if (!ok(w)) return;
+    const gd = d.giftDetails || {};
     // presentes em sequência só contam quando terminam
-    if (d.giftType === 1 && !d.repeatEnd) return;
-    const coins = (d.giftDetails?.diamondCount ?? d.diamondCount ?? 1) * (d.repeatCount || 1);
-    send({ t: "gift", ...who(d), coins, gift: d.giftName || d.giftDetails?.giftName || "" });
+    if (gd.giftType === 1 && !d.repeatEnd) return;
+    const coins = Math.max(1, (gd.diamondCount || d.diamondCount || 1) * (d.repeatCount || 1));
+    send({ t: "gift", ...w, coins, gift: gd.giftName || d.giftName || "" });
   });
-  conn.on(WebcastEvent.FOLLOW, (d) => send({ t: "follow", ...who(d) }));
-  conn.on(WebcastEvent.SHARE, (d) => send({ t: "share", ...who(d) }));
+  conn.on(WebcastEvent.FOLLOW, (d) => { const w = who(d); if (ok(w)) send({ t: "follow", ...w }); });
+  conn.on(WebcastEvent.SHARE, (d) => { const w = who(d); if (ok(w)) send({ t: "share", ...w }); });
   const go = () => conn.connect()
     .then(() => console.log("Conectado na live de @" + USER))
     .catch((e) => { console.log("Aguardando a live (@" + USER + " ainda não está ao vivo?)", e?.message || e); setTimeout(go, 15000); });

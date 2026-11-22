@@ -42,32 +42,39 @@ function img(u){if(!u)return null;if(imgCache.has(u))return imgCache.get(u);
  const i=new Image();i.crossOrigin="anonymous";i.src=u;i.onerror=()=>i._bad=1;imgCache.set(u,i);return i;}
 const COLORS=["#ff5a5f","#ffb400","#2ecc71","#3aa0ff","#c15bff","#ff6fb5","#19d3c5","#ff8a3d"];
 const hashColor=s=>COLORS[[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
-function addFighter(u,hp){
+const lastDeath=new Map(); let joinTokens=3,joinT=0;
+function addFighter(u,hp,force){
+  if(!u.id)return null;
   let f=fighters.get(u.id);
-  if(f){f.hp=Math.min(f.max*1.5,f.hp+hp);f.max=Math.max(f.max,f.hp);return f;}
-  if(fighters.size>=MAXF){ // remove o mais fraco
-    let w=null;fighters.forEach(x=>{if(!w||x.hp<w.hp)w=x});if(w&&w.hp<hp)fighters.delete(w.id);else return null;}
-  const a=Math.random()*6.28,d=Math.random()*R*.6;
-  f={id:u.id,name:u.name,pic:u.pic,x:CX+Math.cos(a)*d,y:CY+Math.sin(a)*d,vx:(Math.random()-.5)*300,vy:(Math.random()-.5)*300,
-     hp,max:hp,r:44,col:hashColor(u.id+u.name),kills:0,power:1,hit:0,spawn:1};
+  if(f)return f;   // já existe: NÃO cria outro e NÃO ganha vida só por comentar
+  const d=lastDeath.get(u.id);if(!force&&d&&performance.now()-d<15000)return null;      // espera 15s após morrer
+  if(!force){if(joinTokens<1)return null;joinTokens--;}                                       // limita entradas por segundo
+  if(fighters.size>=MAXF){let w=null;fighters.forEach(x=>{if(!w||x.hp<w.hp)w=x});if(w&&w.hp<hp)fighters.delete(w.id);else return null;}
+  const a=Math.random()*6.28,dd=Math.random()*R*.6;
+  f={id:u.id,name:u.name,pic:u.pic,x:CX+Math.cos(a)*dd,y:CY+Math.sin(a)*dd,vx:(Math.random()-.5)*300,vy:(Math.random()-.5)*300,
+     hp,max:hp,r:44,giant:0,col:hashColor(u.id+u.name),kills:0,power:1,hit:0,spawn:1,healT:0};
   fighters.set(u.id,f);log(u.name+" entrou");sfx("join");return f;
 }
 function log(t){feed.unshift({t,life:5});if(feed.length>6)feed.pop();}
 function boom(x,y,col,n=10){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=100+Math.random()*300;fx.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:.6,col});}}
 function pop(x,y,text,col){fx.push({x,y,vy:-90,l:1,text,col,txt:1});}
 function onEvent(e){
-  if(winner)return;
-  if(e.t==="chat"){const f=addFighter(e,100);if(f){f.power=Math.min(2,f.power+.05);pop(f.x,f.y-60,"💬","#fff");}}
-  else if(e.t==="like"){const f=fighters.get(e.id)||addFighter(e,100);if(f){f.hp=Math.min(f.max*1.5,f.hp+Math.min(e.n,10)*2);sfx("heal");}}
-  else if(e.t==="follow"){const f=addFighter(e,150);if(f){f.hp+=120;f.max=Math.max(f.max,f.hp);pop(f.x,f.y-60,"+SEGUIU","#ffd34d");}}
-  else if(e.t==="share"){const f=addFighter(e,150);if(f){f.hp+=80;f.max=Math.max(f.max,f.hp);pop(f.x,f.y-60,"+SHARE","#7fe3ff");}}
-  else if(e.t==="gift"){const hp=Math.min(4000,150+e.coins*25);const f=addFighter(e,hp);if(f){f.hp=Math.max(f.hp,hp);f.max=Math.max(f.max,f.hp);f.r=Math.min(80,44+Math.sqrt(e.coins)*1.4);f.power=Math.min(3,f.power+e.coins/80);
-    pop(f.x,f.y-70,"🎁 "+(e.gift||e.coins),"#ffd34d");boom(f.x,f.y,"#ffd34d",24);sfx("gift");log(e.name+" mandou "+(e.gift||e.coins+" moedas"));}}
+  if(winner||!e||!e.id)return;
+  if(e.t==="chat"){const had=fighters.has(e.id);const f=addFighter(e,100);if(f&&!had){}else if(f){f.power=Math.min(2,f.power+.02);}}
+  else if(e.t==="like"){const f=fighters.get(e.id);if(f){const n=Math.min(e.n||1,15);f.hp=Math.min(f.max*2,f.hp+n*6);f.max=Math.max(f.max,f.hp);
+      if(f.healT<=0){f.healT=.6;pop(f.x,f.y-f.r-30,"+❤ "+Math.round(n*6),"#ff7aa8");sfx("heal");}}}
+  else if(e.t==="follow"){const f=addFighter(e,150,true);if(f){f.hp+=120;f.max=Math.max(f.max,f.hp);pop(f.x,f.y-f.r-30,"+SEGUIU","#ffd34d");}}
+  else if(e.t==="share"){const f=addFighter(e,150,true);if(f){f.hp+=80;f.max=Math.max(f.max,f.hp);pop(f.x,f.y-f.r-30,"+SHARE","#7fe3ff");}}
+  else if(e.t==="gift"){const c=Math.max(1,e.coins||1);const hp=Math.min(5000,200+c*40);const f=addFighter(e,hp,true);
+    if(f){f.hp=Math.min(8000,f.hp+hp);f.max=Math.max(f.max,f.hp);f.giant=Math.min(80,f.giant+14+Math.sqrt(c)*3);f.power=Math.min(3,f.power+c/80);
+      pop(f.x,f.y-f.r-40,"🎁 "+(e.gift||c),"#ffd34d");boom(f.x,f.y,"#ffd34d",24);sfx("gift");log(e.name+" mandou "+(e.gift||c+" moedas")+" e ficou GIGANTE");}}
 }
 let last=performance.now();
 function step(dt){
+  joinT+=dt;if(joinT>=.35){joinT=0;joinTokens=Math.min(3,joinTokens+1);}
   const arr=[...fighters.values()];
   for(const f of arr){
+    const tr=Math.min(150,38+Math.sqrt(Math.max(f.hp,0))*1.2+f.giant);f.r+=(tr-f.r)*Math.min(1,dt*6);f.healT-=dt;
     f.x+=f.vx*dt;f.y+=f.vy*dt;f.spawn=Math.max(0,f.spawn-dt*2);f.hit=Math.max(0,f.hit-dt*4);
     const sp=Math.hypot(f.vx,f.vy);if(sp<160){f.vx*=1.02;f.vy*=1.02;}if(sp>480){f.vx*=.98;f.vy*=.98;}
     const dx=f.x-CX,dy=f.y-CY,d=Math.hypot(dx,dy);
@@ -85,7 +92,7 @@ function step(dt){
         if(b.hp<=0&&!b.dead){b.dead=1;a.kills++;}
       }}
   }
-  for(const f of arr)if(f.hp<=0){boom(f.x,f.y,f.col,20);log(f.name+" foi eliminado");sfx("ko");fighters.delete(f.id);}
+  for(const f of arr)if(f.hp<=0){lastDeath.set(f.id,performance.now());boom(f.x,f.y,f.col,20);log(f.name+" foi eliminado");sfx("ko");fighters.delete(f.id);}
   if(fighters.size===1&&!winner&&roundStarted>=3){winner=[...fighters.values()][0];winT=0;boom(winner.x,winner.y,"#ffd34d",50);sfx("win");}
   roundStarted=Math.max(roundStarted,Math.min(fighters.size,3));
   for(const p of fx){p.x+=(p.vx||0)*dt;p.y+=p.vy*dt;p.l-=dt;}
